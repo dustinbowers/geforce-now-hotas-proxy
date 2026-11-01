@@ -4,8 +4,37 @@ Make an unsupported flight stick work in GeForce NOW on macOS by putting a
 Raspberry Pi between the stick and the computer.
 
 **Status:** confirmed working in a live GFN session, controlling the game.
-Verified against GFN client 2.0.90.120, macOS 26.6.2 (Apple silicon), and a
-Raspberry Pi 4 Model B running Debian 13 (trixie), kernel 6.18.50.
+
+### Verified against
+
+| | |
+| --- | --- |
+| **Date verified** | **2026-11-01** |
+| **GFN client** | **2.0.90.120** |
+| macOS | 26.6.2 (Apple silicon) |
+| Hardware | Raspberry Pi 4 Model B |
+| OS | Debian 13 (trixie), kernel 6.18.50 |
+| Source device | Thrustmaster HOTAS Warthog Base MKII (`044f:0450`) |
+| Emulated device | Thrustmaster HOTAS Warthog Joystick (`044f:0402`) |
+
+> **Check this before you start.** The allowlist this project depends on is
+> compiled into NVIDIA's binary and can change in any GFN update. If you are
+> reading this well after the date above, re-extract the list from *your*
+> installed client before building anything — it takes one command, and it tells
+> you immediately whether `044f:0402` is still a valid target:
+>
+> ```bash
+> strings -a /Applications/GeForceNOW.app/Contents/Frameworks/libGeronimo.dylib \
+>   | grep -oE '\b[0-9a-f]{4}:[0-9a-f]{4}\b' | sort -u
+> ```
+>
+> See [The allowlist](#the-allowlist) for what the list contained on the date
+> above and how to pick a different target if `0402` is gone.
+
+> **Note on authorship.** This project was built and documented with AI
+> assistance. The setup was verified working on real hardware as described, but
+> review the scripts before running them as root — see
+> [What was and wasn't tested](#what-was-and-wasnt-tested).
 
 ---
 
@@ -464,8 +493,10 @@ once is miserable.
 
 ### The allowlist
 
-As of GFN 2.0.90.120, `libGeronimo.dylib` contains exactly 20 entries. Re-extract
-them yourself — NVIDIA updates this binary:
+**As observed on 2026-11-01, in GFN client 2.0.90.120**, `libGeronimo.dylib`
+contained exactly 20 entries. This is a snapshot, not a stable contract —
+NVIDIA ships a new binary with most updates. Re-extract it from your own
+install before trusting anything below:
 
 ```bash
 strings -a /Applications/GeForceNOW.app/Contents/Frameworks/libGeronimo.dylib \
@@ -554,14 +585,33 @@ report the genuine descriptor defines, but nothing consumes it.
 
 ## What was and wasn't tested
 
-The running system described here was verified end to end: gadget bring-up,
-macOS enumeration, byte-exact report translation against live hardware, GFN
-acceptance (`Plugging 044F:0402:0100`), and confirmed in-game control.
+Everything here was built and documented with AI assistance, working against
+real hardware rather than from theory. That makes the distinction below worth
+stating precisely.
 
-Two things are **reconstructed rather than re-tested**: the from-scratch
-Step 1–2 setup (derived from the working machine's final state, not re-run on a
-blank SD card), and the systemd units in Step 8 (written but never installed).
+**Verified on 2026-11-01, on the hardware in the table at the top:**
+
+- Gadget bring-up and binding (`tm.sh`)
+- macOS enumeration as a joystick (`PrimaryUsage 4`, `AppleUserHIDEventDriver`)
+- Byte-exact report translation, confirmed by capturing the source on the Pi and
+  the translated output on the Mac simultaneously and comparing fields
+- GFN acceptance — `GSHID: Supporting {044F:0402}` and `Plugging 044F:0402:0100`
+  in `geronimo.log`, with no rejection line
+- Confirmed in-game control in a live session
+
+**Reconstructed rather than re-tested:**
+
+- The from-scratch Step 1–2 setup. Derived from the working machine's final
+  state, not re-run on a blank SD card.
+- The systemd units in Step 8. Written but never installed, because the build
+  session was blocked from installing boot-persistent services.
+
 Expect to debug those two sections. Everything else was observed working.
+
+**Read the scripts before running them.** Four of the six files here run as
+root, and `tm.sh` writes directly into `configfs`. They are short and commented
+specifically so you can audit them in a few minutes. Do that rather than
+trusting the provenance.
 
 ---
 
