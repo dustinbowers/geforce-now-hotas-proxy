@@ -1,0 +1,15 @@
+[Unit]
+Description=HOTAS MKII -> Warthog 0402 HID translation proxy
+Documentation=file:/root/hotas_proxy.py
+Requires=hotas-gadget.service
+After=hotas-gadget.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -u /root/hotas_proxy.py
+# The physical MKII may be absent or enumerate late; keep retrying.
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,17 @@
+[Unit]
+Description=HOTAS USB gadget (presents 044f:0402 Warthog joystick to the host)
+Documentation=file:/root/tm.sh
+After=sys-kernel-config.mount
+Wants=sys-kernel-config.mount
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/root/tm.sh
+ExecStop=/root/disconnect.sh
+# The UDC may not be ready immediately at boot; retry rather than give up.
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

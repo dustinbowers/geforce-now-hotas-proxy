@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Captures and logs produced while debugging
+*.log
+*.bin
+*-capture.txt
+
+# Local edits kept out of the repo
+*.bak
+*.orig
+*.pre-*
+
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+*.swp
